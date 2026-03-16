@@ -16,8 +16,9 @@
 #include "Types.hpp"
 
 constexpr unsigned long BAUD = 115200; // UART3 Baudrate
-constexpr uint8_t START_OF_COMM_BYTE = 0x53; // 'S'
-constexpr uint8_t END_OF_COMM_BYTE = 0x45; // 'E'
+
+constexpr uint8_t START_OF_COMM_BYTE = 0x53;
+constexpr uint8_t END_OF_COMM_BYTE = 0x45;
 
 void sendSensorDataToEsp(SensorData* data);
 void clearUart3Buffer();
@@ -31,6 +32,7 @@ void clearUart3Buffer();
  */
 template<typename T>
 void sendValue(T* value) {
-    uint8_t* pValue = reinterpret_cast<uint8_t*>(value); // casting to byte pointer
+    uint8_t* pValue = reinterpret_cast<uint8_t*>(value); // casting to uint_8 pointer
     Serial3.write(pValue, sizeof(T)); // send over UART3
 }
+

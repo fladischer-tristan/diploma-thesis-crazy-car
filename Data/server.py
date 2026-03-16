@@ -1,11 +1,11 @@
-import struct
 import socket
 import csv
 import os
 
+import struct
+
 fmt = "<B I f f f f f f f f f f f I I B"
 packet_size = struct.calcsize(fmt)
-print("Packet size:", packet_size)
 
 FIELDS = [
     "startByte", "packetNumber", "velocity", "batteryVoltage",
@@ -14,7 +14,6 @@ FIELDS = [
     "servoPulse", "escPulse", "stopByte"
 ]
 
-# CSV-Datei vorbereiten
 csv_filename = "home_straight_path_V1.csv"
 file_exists = os.path.isfile(csv_filename)
 

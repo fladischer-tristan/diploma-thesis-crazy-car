@@ -23,17 +23,17 @@ constexpr uint8_t VBAT_PIN = A0;
 
 // gyrosensor
 constexpr uint8_t MPU9250_ADDR = 0x68; // I2C addr
-constexpr float ACCEL_SENSITIVITY = 16384.0; // ±2g - config can be read from register
-constexpr float GYRO_SENSITIVITY = 131.0; // ±250°/s - config can be read from register
+constexpr float ACCEL_SENSITIVITY = 16384.0F; // ±2g - config can be read from register
+constexpr float GYRO_SENSITIVITY = 131.0F; // ±250°/s - config can be read from register
 
 // hall sensor and hall sample rate
 constexpr uint8_t HALL_SENSOR_1_PIN = 18;
 constexpr uint8_t HALL_SENSOR_2_PIN = 49;
 
 // constants for calculation
-constexpr float V_REF = 2.56; // Internal Reference Voltage
+constexpr float V_REF = 2.56F; // Internal Reference Voltage
 constexpr int ADC_MAX = 1023; // (2^10)-1 ... 1023
-constexpr int PULSE_DISTANCE = 5; // physical distance between 2 hallsensor pulses
+constexpr float PULSE_DISTANCE = 5.0F; // physical distance between 2 hallsensor pulses
 
 void sensorInit();
 void readAllSensorData(SensorData& sensorData);

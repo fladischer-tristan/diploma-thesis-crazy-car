@@ -9,7 +9,6 @@ from sklearn.model_selection import train_test_split
 df = pd.read_csv("home_straight_path_V1.csv", sep=";", encoding="cp1252")
 df.columns = df.columns.str.strip()
 
-# Example: choose your feature columns and target columns
 feature_cols = [
     "packetNumber",
     "leftDistance", "middleDistance", "rightDistance",
@@ -71,8 +70,6 @@ def minmax_to_minus1_plus1(x, xmin, xmax, eps=1e-9):
     x = 2.0 * x - 1.0                         # -> [-1, 1]
     return np.clip(x, -1.0, 1.0)
 
-
-# normalizing our data
 X = minmax_to_minus1_plus1(X_raw, x_min, x_max)
 Y = minmax_to_minus1_plus1(Y_raw, y_min, y_max)
 

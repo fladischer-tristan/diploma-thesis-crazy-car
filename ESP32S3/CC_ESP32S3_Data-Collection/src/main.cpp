@@ -48,6 +48,7 @@ CycleState cycleState = SEND_MOTOR_PULSES;
 
 // FreeRTOS Queue and TCP task
 QueueHandle_t packetQueue;
+
 void tcpSenderTask(void *pvParameters);
 
 void setup() {
@@ -113,27 +114,34 @@ void loop() {
 			if (auxUart.available() && auxUart.peek() == END_OF_COMM_BYTE) {
 				auxUart.read();
 				Serial.println("EoC...");
-				while (auxUart.available()) auxUart.read(); // reset uart buffer
+
+				// clearing auxUart buf to ensure stable synchronization
+				while (auxUart.available()) auxUart.read();
+
 				commState = WAIT_FOR_START;
 				break;
 			}
 
 			// Secondary StateMachine - Controls details of communication
+
 			switch (cycleState) {
 				case SEND_MOTOR_PULSES:
 					Serial.println("Reading Motorpulses ...");
 					// reading RC-Receiver pins and sending the Signals to Arduino MEGA
 					motorData.escPulse = pulseIn(ESP_ESC_PWM_IN, HIGH, 25000);
 					motorData.servoPulse = pulseIn(ESP_STEERING_PWM_IN, HIGH, 25000);
-					Serial.print("ESC: ");
-					Serial.println(motorData.escPulse);
-					Serial.print("SERVO: ");
-					Serial.println(motorData.escPulse);
+
+					// Serial.print("ESC: ");
+					// Serial.println(motorData.escPulse);
+					// Serial.print("SERVO: ");
+					// Serial.println(motorData.escPulse);
+
 					sendMotorDataToMega(&motorData);
-					Serial.println("Sent Motorpulses ...");
 
 					// switch to next state
 					cycleState = READ_SENSOR_DATA;
+
+					// Serial.println("Sent Motorpulses ...");
 				break;
 
 				case READ_SENSOR_DATA:
@@ -141,7 +149,6 @@ void loop() {
 					if (readSensorFrame(sensorData)) {
 						sensorDataDebugPrint(sensorData);
 						cycleState = APPEND_DATA_TO_QUEUE;
-						Serial.println("Fetch successful ...");
 					}
 				break;
 
@@ -158,25 +165,22 @@ void loop() {
 }
 
 /**
- * @brief Sends SensorData to TCP Server, operates on reserved CPU core
+ * @brief Send SensorData to TCP-Server, operates on reserved Core
  * 
  * @param pvParameters NULL
  */
 void tcpSenderTask(void *pvParameters) {
+	static SensorData packet;
 	for (;;) {
-		SensorData packet;
-		Serial.println("Hello from Queue Task");
 		if (xQueueReceive(packetQueue, &packet, 0)) {
 			if (client.connected()) {
-				Serial.println("Sending Packet");
 				// Sending a SensorData packet to TCP server in raw bytes
 				client.write((uint8_t*)&packet, sizeof(packet));
 				vTaskDelay(10 / portTICK_PERIOD_MS);
-			}
-			else {
+			} else {
 				// If we are not connected to server, try reconnect
 				// since this task does not block the main loop, we
-				// can safely wait for the reconnect. The queue will
+				// can safely wait for a reconnect. The queue will
 				// buffer any incoming SensorData from loop.
 				client.connect(HOST, PORT);
 				vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -186,3 +190,4 @@ void tcpSenderTask(void *pvParameters) {
 		}
 	}
 }
+

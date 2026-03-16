@@ -38,8 +38,8 @@ float adcToVoltage(int adc) {
  * @param pulseCount amount of hallsensor pulses detected
  * @return float - velocity in mm/s
  */
-float calculateVelocity(const int16_t pulseCount, const unsigned long sampleRate) { 
-    return (float)(pulseCount * PULSE_DISTANCE) / (float)(sampleRate / 1000.0f); // mm/s
+float calculateVelocity(int16_t pulseCount, float sampleRate) { 
+    return ((float)pulseCount * PULSE_DISTANCE) / (sampleRate / 1000.0f); // mm/s
 }
 
 /**
@@ -53,19 +53,21 @@ float calculateVelocity(const int16_t pulseCount, const unsigned long sampleRate
  * @param gz pass reference - angular speed in z dir
  */
 void readGyroSensor(float& ax, float& ay, float& az, float& gx, float& gy, float& gz) {
-    const byte accelReg = 0x3B; // first acceleration register
-    const byte gyroReg = 0x43; // first gyroscope register
+    const byte accelReg = 0x3B; // First acceleration register
+    const byte gyroReg = 0x43; //  First gyroscope register
 
+    /* First read acceleration registers */
     Wire.beginTransmission(MPU9250_ADDR);
     Wire.write(accelReg);
     Wire.endTransmission(false);
-    Wire.requestFrom(MPU9250_ADDR, 6, true); // requesting 6 bytes from MPU9250 (2 bytes each for 3 values)
+    Wire.requestFrom(MPU9250_ADDR, 6, true); // Request 6 bytes from MPU9250 (2 bytes each for 3 values)
 
     // acceleration values (g)
-    ax = (float)((Wire.read() << 8) | Wire.read()) / ACCEL_SENSITIVITY; // read 1st byte, bit shift 8 to left, then add 2nd byte
+    ax = (float)((Wire.read() << 8) | Wire.read()) / ACCEL_SENSITIVITY;
     ay = (float)((Wire.read() << 8) | Wire.read()) / ACCEL_SENSITIVITY;
     az = (float)((Wire.read() << 8) | Wire.read()) / ACCEL_SENSITIVITY;
 
+    /* Repeat process for gyroscope values */
     Wire.beginTransmission(MPU9250_ADDR);
     Wire.write(gyroReg);
     Wire.endTransmission(false);

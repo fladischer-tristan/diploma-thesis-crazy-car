@@ -16,8 +16,6 @@
 #include "Types.hpp"
 #include "Debug.hpp"
 
-constexpr uint16_t SAMPLE_RATE = 20; // data sample time in ms
-
 const uint8_t SENSOR_FRAME_LENGTH = sizeof(SensorData); // length of each UART packet
 
 // physical buttons - negative logic
@@ -40,6 +38,8 @@ const uint32_t SERVO_PULSE_MAX = 1963;
 unsigned long packetCounter = 0; // used to add identifier to each SensorData struct
 unsigned long lastTime = 0;
 volatile long hallPulseCount = 0;
+
+uint16_t sampleRate = 20; // data sample time in ms
 
 // runMode enum used for loop logic
 enum RunMode {START, STOP};
@@ -100,7 +100,7 @@ void loop() {
 	* 4. Send back a SensorData struct with all Sensor data + Motorpulses + Identifier
 	*/
 	if (runMode == START) {
-		if (now - lastTime >= SAMPLE_RATE) {
+		if (now - lastTime >= sampleRate) {
 			unsigned long startTime = millis();
 
 			// 2. Wait for incoming MotorPulses (SensorData struct)
@@ -132,7 +132,7 @@ void loop() {
 
 			// getting our hall pulseCount
 			noInterrupts();
-			long count = hallPulseCount;
+			float count = hallPulseCount; // not an integer because calculateVelocity expects float
 			hallPulseCount = 0;
 			interrupts();
 
@@ -141,7 +141,7 @@ void loop() {
 			sensorData.packetNumber = packetCounter; // Unique ID
 			packetCounter++;
 			readAllSensorData(sensorData); // Insert sensordata
-			sensorData.velocity = calculateVelocity(count, SAMPLE_RATE); // Compute and insert Velocity
+			sensorData.velocity = calculateVelocity(count, (float)sampleRate); // Compute and insert Velocity
 			sensorData.servoPulse = servoPulseUS; // Instert servo pulse
 			sensorData.escPulse = escPulseUS; // Insert esc pulse
 

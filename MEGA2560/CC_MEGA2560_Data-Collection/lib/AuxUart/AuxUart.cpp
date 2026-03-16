@@ -12,18 +12,11 @@
 #include "AuxUart.hpp"
 
 /**
- * @brief Transmitt SensorData struct over Serial3 in binary (Serial.write())
+ * @brief Transmit SensorData struct over Serial3 in binary
  * 
- * @param data pointer to SensorData struct - holds all data from sensor measurements
+ * @param data pointer to SensorData struct
  */
 void sendSensorDataToEsp(SensorData* data) {
-    /*
-    * Transmitting each sensor Value in binary
-    * sendValue() casts each value into a byte pointer,
-    * so that Serial3 can send over all datatypes in the
-    * same way.
-    */
-
     sendValue(&data->startByte);
     sendValue(&data->packetNumber);
     sendValue(&data->velocity);

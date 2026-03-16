@@ -57,7 +57,10 @@ constexpr uint8_t ESP_S1 = D8;
  */
 static constexpr int kInputDim  = 11;
 
-// Min/max constraints for our features and labels. These will be used for normalizing and denormalizing
+/**
+ * @brief min/max constrains for features and labels. These values were extracted the dataset (features) and RC-Receiver (labels)
+ * 
+ */
 const float PACKET_NUMBER_MAX = 129.0F, PACKET_NUMBER_MIN = 0.0F; /* is actually an integer, our function takes floats however */
 const float LEFT_DT_MAX = 2.559999943F, MIDDLE_DT_MAX = 2.559999943F, RIGHT_DT_MAX = 2.559999943F;
 const float LEFT_DT_MIN = 0.457947195F, MIDDLE_DT_MIN = 0.012512218F, RIGHT_DT_MIN = 0.290283471F;
@@ -103,10 +106,6 @@ enum CycleState {
 // State-Machine
 CommState commState = WAIT_FOR_START;
 CycleState cycleState = READ_SENSOR_DATA;
-
-// FreeRTOS Queue and TCP task
-QueueHandle_t packetQueue;
-void tcpSenderTask(void *pvParameters);
 
 // Helper functions
 static inline float clampf(float val, float lo, float hi);
@@ -155,7 +154,7 @@ void setup() {
 
 	if (interpreter->AllocateTensors() != kTfLiteOk) {
 		Serial.println("AllocateTensors FAILED");
-		while (true) delay(1000);
+		esp_restart();
 	}
 
 	Serial.println("READY");
@@ -219,6 +218,7 @@ void loop() {
 						Serial.println("Fetch successful ...");
 					}
 				break;
+
 				case NORMALIZE_SENSOR_DATA:
 					// Fill input layer with normalized data
 					input->data.f[0]  = norm((float)sensorData.packetNumber, PACKET_NUMBER_MIN, PACKET_NUMBER_MAX);
@@ -235,6 +235,7 @@ void loop() {
 
 					cycleState = FEED_AI_MODEL;
 				break;
+
 				case FEED_AI_MODEL:
 					// Invoke the interpreter
 					if (interpreter->Invoke() != kTfLiteOk) {
@@ -243,11 +244,12 @@ void loop() {
 						return;
 					}
 
-					
 					Serial.print("raw y0="); Serial.println(output->data.f[0], 6);
 					Serial.println("raw y1="); Serial.println(output->data.f[1], 6);
+
 					cycleState = DENORMALIZE_AI_OUTPUT;
 				break;
+
 				case DENORMALIZE_AI_OUTPUT:
 					sensorData.servoPulse = denorm(output->data.f[0] , SERVO_PULSE_MIN, SERVO_PULSE_MAX);
 					sensorData.escPulse = denorm(output->data.f[1], ESC_PULSE_MIN, ESC_PULSE_MAX);
@@ -260,6 +262,7 @@ void loop() {
 					// Serial.print(sensorData.escPulse, 6);
 					// Serial.println("]");
 				break;
+
 				case SEND_MOTOR_PULSES:
 					// We only ever send the same sensorData struct because we modify it in-place
 					// Otherwise we would need to create new Structs every cycle
@@ -293,7 +296,7 @@ static inline float norm(float x, float x_min, float x_max)
 {
     float range = x_max - x_min;
     if (range == 0.0f)
-        return 0.0f;  // definiertes Fallback-Verhalten
+        return 0.0f;  // fallback 
 
 	float clamped = clampf(x, x_min, x_max);
     return 2.0f * (clamped - x_min) / range - 1.0f;
@@ -307,7 +310,7 @@ static inline float norm(float x, float x_min, float x_max)
 static inline float denorm(float y, float x_min, float x_max)
 {
 	float clamped = clampf(y, -1.0f, 1.0f);
-    return ( (clamped + 1.0f) * 0.5f ) * (x_max - x_min) + x_min;
+    return ((clamped + 1.0f) * 0.5f) * (x_max - x_min) + x_min;
 }
 
 // /**
