@@ -39,6 +39,6 @@ void sensorInit();
 void readAllSensorData(SensorData& sensorData);
 void readBatteryVoltage(float& batteryVoltage);
 float adcToVoltage(int adc);
-float calculateVelocity(int16_t pulseCount, const unsigned long sampleRate);
+float calculateVelocity(int16_t pulseCount, float sampleRate);
 void readGyroSensor(float& ax, float& ay, float& az, float& gx, float& gy, float& gz);
 void readDistanceSensors(float& leftDistance, float& middleDistance, float& rightDistance);
