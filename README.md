@@ -6,11 +6,11 @@ This project enables a Crazy Car (Arduino V2.0) to learn and replicate driving r
 
 ## What you need
 
-- Crazy Car Controller Arduino V2.0
-- Arduino IDE (or PlatformIO)
-- Python 3.8+ with tensorflow, numpy, pandas, scikit-learn
+- Crazy Car Controller Arduino V2.0 with AI-Board (AI-Board was designed for this diploma-thesis)
+- PlatformIO (recommended) or ArduinoIDE
+- Python 3.11 with tensorflow, numpy, pandas, scikit-learn
 - USB cable (data sync)
-- MicroSD card (for collecting training data)
+- MicroSD card (OPTIONAL, for collecting training data offline)
 
 ---
 
